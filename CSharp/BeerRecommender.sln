@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32328.378
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BeerAdvocateWebScraper", "BeerAdvocateWebScraper\BeerAdvocateWebScraper.csproj", "{BC4B3DBE-5C9B-47ED-9373-804436CAC08E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeerRecommender", "BeerRecommender\BeerRecommender.csproj", "{FF0752AD-C03D-49C9-BC66-AE999A46ACCD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BC4B3DBE-5C9B-47ED-9373-804436CAC08E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC4B3DBE-5C9B-47ED-9373-804436CAC08E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC4B3DBE-5C9B-47ED-9373-804436CAC08E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC4B3DBE-5C9B-47ED-9373-804436CAC08E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FF0752AD-C03D-49C9-BC66-AE999A46ACCD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FF0752AD-C03D-49C9-BC66-AE999A46ACCD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FF0752AD-C03D-49C9-BC66-AE999A46ACCD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FF0752AD-C03D-49C9-BC66-AE999A46ACCD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {86FF08D1-1B9A-4201-B6FF-3967F45B0DB4}
+	EndGlobalSection
+EndGlobal
