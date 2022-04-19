@@ -34,7 +34,7 @@ namespace BeerRecommender
             foreach (var node in nodes)
             {
                 var name = node.ChildNodes[0].InnerHtml;
-                var link = $"https://www.beeradvocate.com{node.Attributes[0].Value}";
+                var link = $"https://www.beeradvocate.com{node.Attributes[0].Value}?show=poobahs#lists";
 
                 //Console.WriteLine($"Beer: {name}, Link: {link}");
                 results.Add(new Beer(name, link));
