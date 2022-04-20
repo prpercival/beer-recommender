@@ -6,6 +6,7 @@ from statistics import mean
 from pathlib import Path
 from flask import Flask, request
 from flask_cors import CORS
+import logging
 
 nlp = spacy.load("en_core_web_lg")  # make sure to use larger package!
 
@@ -13,13 +14,25 @@ numberOfBeersToLoad = 500
 
 
 class Result:
-    def __init__(self, name, similarity, link):
+    def __init__(self, name, similarity, link, brewery, style, alcohol, score):
         self.name = name
         self.similarity = similarity
         self.link = link
+        self.brewery = brewery
+        self.style = style
+        self.alcohol = alcohol
+        self.score = score
 
     def serialize(self):
-        return {"name": self.name, "similarity": self.similarity, "link": self.link}
+        return {
+            "name": self.name,
+            "similarity": self.similarity,
+            "link": self.link,
+            "brewery": self.brewery,
+            "style": self.style,
+            "alcohol": self.alcohol,
+            "score": self.score,
+        }
 
     def toJSON(self):
         return json.dumps(
@@ -45,21 +58,22 @@ def recommender(input, data):
             similarity = input.similarity(comment)
             similarities.append(similarity)
 
-        results.append(Result(x["Name"], mean(similarities), x["Link"]))
+        results.append(Result(x["Name"], mean(similarities), x["Link"], x["Brewery"], x["Style"], x["Alcohol"], x["Score"]))
         beerNumber = beerNumber + 1
 
     results.sort(key=lambda x: x.similarity, reverse=True)
 
-    print("--- %s seconds for recommendation ---" % (time.time() - start_time))
+    logging.info("--- %s seconds for recommendation ---" % (time.time() - start_time))
 
     return results
 
 
 def init():
     print("Intializing data...")
+    logging.info("Intializing data...")
 
     base_path = Path(__file__).parent
-    f = open(f"{base_path}/data/beer_data_12_04_2022_09_00_53.json", encoding="utf-8")
+    f = open(f"{base_path}/data/beer_data_19_04_2022_05_45_25.json", encoding="utf-8")
     data = json.load(f)
 
     start_time = time.time()
@@ -70,7 +84,7 @@ def init():
         if beerNumber > numberOfBeersToLoad:
             break
 
-        print(f'Intializing #{beerNumber}: {x["Name"]}')
+        logging.info(f'Intializing #{beerNumber}: {x["Name"]}')
         nlp_comments = []
 
         for comment in x["Comments"]:
@@ -80,6 +94,7 @@ def init():
         beerNumber = beerNumber + 1
 
     print("--- %s seconds to load ---" % (time.time() - start_time))
+    logging.info("--- %s seconds to load ---" % (time.time() - start_time))
     return data
 
 
@@ -102,6 +117,7 @@ if __name__ == "__main__":
     # run() method of Flask class runs the application
     # on the local development server.
     print("Starting server...")
+    logging.info("Starting server...")
     app.run(debug=False, host="0.0.0.0", port=5002)
 
 # while True:

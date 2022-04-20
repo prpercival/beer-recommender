@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace BeerRecommender
@@ -27,17 +28,24 @@ namespace BeerRecommender
             var htmlDoc = _web.Load(url);
 
             ///html/body/div[2]/div/div[2]/div[2]/div[2]/div/div/div[3]/div/div/div[2]/table/tbody/tr[2]/td[2]/a/b
-            var nodes = htmlDoc.DocumentNode.SelectNodes("//a/b").Select(node => node.ParentNode).Where(node => node.Attributes[0].Value.Contains("/beer/profile"));
+            var nodes = htmlDoc.DocumentNode.SelectNodes("//a/b").Select(node => node.ParentNode).Where(node => node.Attributes[0].Value.Contains("/beer/profile")).Select(node => node.ParentNode);
 
             var results = new List<Beer>();
 
             foreach (var node in nodes)
             {
-                var name = node.ChildNodes[0].InnerHtml;
-                var link = $"https://www.beeradvocate.com{node.Attributes[0].Value}?show=poobahs#lists";
+                var nameNode = node.ChildNodes[0];
+
+                var name = nameNode.ChildNodes[0].InnerHtml;
+                var link = $"https://www.beeradvocate.com{nameNode.Attributes[0].Value}";
+
+                var brewery = node.ChildNodes[1].ChildNodes.Where(node => node.Attributes.FirstOrDefault()?.Value.Contains("/beer/profile") ?? false).FirstOrDefault()?.InnerHtml;
+                var style = node.ChildNodes[1].ChildNodes.Where(node => node.Attributes.FirstOrDefault()?.Value.Contains("/beer/top-styles") ?? false).FirstOrDefault()?.InnerHtml;
+                var alcoholString = node.ChildNodes[1].ChildNodes.Where(node => node.Name == "#text").FirstOrDefault()?.InnerHtml;
+                var alcoholDecimal = decimal.Parse(Regex.Match(alcoholString, @"\d+.+\d").Value);
 
                 //Console.WriteLine($"Beer: {name}, Link: {link}");
-                results.Add(new Beer(name, link));
+                results.Add(new Beer(name, link, brewery, style, alcoholDecimal));
             }
 
             return results;
@@ -49,7 +57,7 @@ namespace BeerRecommender
             {
                 Console.WriteLine($"Beer: {beer.Name}, Link: {beer.Link}");
 
-                var htmlDoc = _web.Load(beer.Link);
+                var htmlDoc = _web.Load($"{beer.Link}?show=poobahs#lists");
 
                 ///html/body/div[2]/div/div[2]/div[2]/div[2]/div/div/div[3]/div/div/div[2]/div[9]/div/div[1]/div[2]
                 var nodes = htmlDoc.DocumentNode.SelectNodes("//div[@id='rating_fullview_content_2']");
@@ -59,6 +67,11 @@ namespace BeerRecommender
                 foreach (var node in nodes)
                 {
                     var comment = node.ChildNodes.Where(node => node.Name == "#text").Select(node => node.InnerHtml);
+
+                    var score = htmlDoc.DocumentNode.SelectNodes("//span[@class='ba-score Tooltip']").FirstOrDefault()?.InnerText;
+
+                    if (score != null)
+                        beer.AddScore(decimal.Parse(score));
 
                     if (comment.Any())
                         beer.AddComment(string.Join("", comment));
