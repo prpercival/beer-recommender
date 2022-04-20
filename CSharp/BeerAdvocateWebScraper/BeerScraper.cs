@@ -66,15 +66,20 @@ namespace BeerRecommender
 
                 foreach (var node in nodes)
                 {
-                    var comment = node.ChildNodes.Where(node => node.Name == "#text").Select(node => node.InnerHtml);
+                    var rawComment = node.ChildNodes.Where(node => node.Name == "#text").Select(node => node.InnerHtml);             
 
                     var score = htmlDoc.DocumentNode.SelectNodes("//span[@class='ba-score Tooltip']").FirstOrDefault()?.InnerText;
 
                     if (score != null)
                         beer.AddScore(decimal.Parse(score));
 
-                    if (comment.Any())
-                        beer.AddComment(string.Join("", comment));
+                    if (rawComment.Any())
+                    {
+                        rawComment = rawComment.Select(x => x.Replace("\n", " ").Replace("\r", " ").Replace("&quot;", " ").Replace("&nbsp;", " "));
+                        //var comment = new string(string.Join("", rawComment).Where(c => !char.IsPunctuation(c)).ToArray());
+                        var comment = string.Join("", rawComment);
+                        beer.AddComment(comment);
+                    }  
                 }
             }
         }
