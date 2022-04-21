@@ -84,7 +84,7 @@ def init():
     print("Intializing data...")
 
     base_path = Path(__file__).parent
-    f = open(f"{base_path}/data/beer_data_19_04_2022_08_39_53.json", encoding="utf-8")
+    f = open(f"{base_path}/data/beer_data_19_04_2022_11_41_19.json", encoding="utf-8")
     data = json.load(f)
 
     start_time = time.time()
