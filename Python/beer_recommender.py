@@ -15,24 +15,28 @@ numberOfBeersToLoad = 500
 
 
 class Result:
-    def __init__(self, name, recommendation, link, brewery, style, alcohol, score):
+    def __init__(self, name, score, similarity, sentiment, link, brewery, style, alcohol, rating):
         self.name = name
-        self.recommendation = recommendation
+        self.score = score
+        self.similarity = similarity
+        self.sentiment = sentiment
         self.link = link
         self.brewery = brewery
         self.style = style
         self.alcohol = alcohol
-        self.score = score
+        self.rating = rating
 
     def serialize(self):
         return {
             "name": self.name,
-            "recommendation": self.recommendation,
+            "score": self.score,
+            "similarity": self.similarity,
+            "sentiment": self.sentiment,
             "link": self.link,
             "brewery": self.brewery,
             "style": self.style,
             "alcohol": self.alcohol,
-            "score": self.score,
+            "rating": self.rating,
         }
 
     def toJSON(self):
@@ -53,17 +57,24 @@ def recommender(input, data):
         if beerNumber > numberOfBeersToLoad:
             break
 
-        recommendations = []
+        scores = []
+        similarities = []
+        sentiments = []
 
         for comment in x["nlp"]:
             similarity = input.similarity(comment)
             sentiment = comment._.blob.polarity
-            recommendations.append(similarity + sentiment)
+
+            similarities.append(similarity)
+            sentiments.append(sentiment)
+            scores.append((.8 * similarity) + (.2 * sentiment))
 
         results.append(
             Result(
                 x["Name"],
-                mean(recommendations),
+                mean(scores),
+                mean(similarities),
+                mean(sentiments),
                 x["Link"],
                 x["Brewery"],
                 x["Style"],
@@ -73,7 +84,7 @@ def recommender(input, data):
         )
         beerNumber = beerNumber + 1
 
-    results.sort(key=lambda x: x.recommendation, reverse=True)
+    results.sort(key=lambda x: x.score, reverse=True)
 
     print("--- %s seconds for recommendation ---" % (time.time() - start_time))
 
