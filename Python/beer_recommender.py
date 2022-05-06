@@ -150,7 +150,7 @@ def init():
 
         beer["nlp"] = nlp(beer["Comparison"])
 
-        print(f"{beer['Name']}: {beer['Comparison']}")
+        print(f"#{beerNumber} {beer['Name']}:{beer['Comparison']}")
 
         beerNumber = beerNumber + 1
 
