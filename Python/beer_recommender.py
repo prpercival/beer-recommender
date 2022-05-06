@@ -2,20 +2,29 @@ import time
 import math
 import spacy
 import json
+import re
+import string
 from statistics import mean
 from pathlib import Path
 from flask import Flask, request
 from flask_cors import CORS
 from spacytextblob.spacytextblob import SpacyTextBlob
+import nltk
+from nltk.corpus import stopwords
 
 nlp = spacy.load("en_core_web_lg")  # make sure to use larger package!
 nlp.add_pipe("spacytextblob")
+
+nltk.download("stopwords")
+stop = stopwords.words("english")
 
 numberOfBeersToLoad = 500
 
 
 class Result:
-    def __init__(self, name, score, similarity, sentiment, link, brewery, style, alcohol, rating):
+    def __init__(
+        self, name, score, similarity, sentiment, link, brewery, style, alcohol, rating
+    ):
         self.name = name
         self.score = score
         self.similarity = similarity
@@ -53,33 +62,26 @@ def recommender(input, data):
 
     beerNumber = 1
 
-    for x in data:
+    for beer in data:
         if beerNumber > numberOfBeersToLoad:
             break
 
-        scores = []
-        similarities = []
-        sentiments = []
+        beerNlp = beer["nlp"]
 
-        for comment in x["nlp"]:
-            similarity = input.similarity(comment)
-            sentiment = comment._.blob.polarity
-
-            similarities.append(similarity)
-            sentiments.append(sentiment)
-            scores.append((.8 * similarity) + (.2 * sentiment))
+        similarity = input.similarity(beerNlp)
+        sentiment = beerNlp._.blob.polarity
 
         results.append(
             Result(
-                x["Name"],
-                mean(scores),
-                mean(similarities),
-                mean(sentiments),
-                x["Link"],
-                x["Brewery"],
-                x["Style"],
-                x["Alcohol"],
-                x["Score"],
+                beer["Name"],
+                similarity,
+                similarity,
+                sentiment,
+                beer["Link"],
+                beer["Brewery"],
+                beer["Style"],
+                beer["Alcohol"],
+                beer["Score"],
             )
         )
         beerNumber = beerNumber + 1
@@ -92,27 +94,64 @@ def recommender(input, data):
 
 
 def init():
-    print("Intializing data...")
 
-    base_path = Path(__file__).parent
-    f = open(f"{base_path}/data/beer_data_19_04_2022_11_41_19.json", encoding="utf-8")
-    data = json.load(f)
+    print("Intializing data...")
 
     start_time = time.time()
 
+    base_path = Path(__file__).parent
+    f = open(f"{base_path}/data/beer_data_05_05_2022_09_51_45.json", encoding="utf-8")
+    data = json.load(f)
+
+    for beer in data:
+        words = []
+
+        for comment in beer["Comments"]:
+            comment = re.sub(
+                "[%s]" % re.escape(string.punctuation), "", comment.lower()
+            )
+            for word in comment.split():
+                if word not in stop and len(word) != 1:
+                    words.append(word)
+
+        beer["Words"] = words
+
     beerNumber = 1
 
-    for x in data:
-        if beerNumber > numberOfBeersToLoad:
-            break
+    for beer in data:
+        # print(f'Intializing #{beerNumber}: {beer["Name"]}')
 
-        print(f'Intializing #{beerNumber}: {x["Name"]}')
-        nlp_comments = []
+        frequencies = {}
 
-        for comment in x["Comments"]:
-            nlp_comments.append(nlp(comment))
+        for word in beer["Words"]:
+            if frequencies.get(word):
+                frequencies[word] += 1
+            else:
+                frequencies[word] = 1
 
-        x["nlp"] = nlp_comments
+        frequencies = {
+            k: v
+            for k, v in sorted(
+                frequencies.items(), key=lambda item: item[1], reverse=True
+            )
+        }
+
+        beer["Frequencies"] = frequencies
+        beer["Comparison"] = ""
+        index = 0
+
+        for frequency in frequencies:
+            index += 1
+
+            if index > 25:
+                break
+
+            beer["Comparison"] += f" {frequency}"
+
+        beer["nlp"] = nlp(beer["Comparison"])
+
+        print(f"{beer['Name']}: {beer['Comparison']}")
+
         beerNumber = beerNumber + 1
 
     print("--- %s seconds to load ---" % (time.time() - start_time))
@@ -138,7 +177,7 @@ if __name__ == "__main__":
     # run() method of Flask class runs the application
     # on the local development server.
     print("Starting server...")
-    app.run(debug=False, host="0.0.0.0", port=5002)   
+    app.run(debug=False, host="0.0.0.0", port=5002)
 
 # while True:
 #     print("Please enter a description: ")
