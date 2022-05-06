@@ -95,7 +95,7 @@ namespace BeerRecommender
 
                         if (rawComment.Any())
                         {
-                            rawComment = rawComment.Select(x => x.Replace("\n", " ").Replace("\r", " ").Replace("&quot;", " ").Replace("&nbsp;", " "));
+                            rawComment = rawComment.Select(x => x.Replace("\n", " ").Replace("\r", " ").Replace("&quot;", " ").Replace("&nbsp;", "").Replace("rDev", ""));
                             //var comment = new string(string.Join("", rawComment).Where(c => !char.IsPunctuation(c)).ToArray());
                             var comment = string.Join("", rawComment);
                             beer.AddComment(comment);
