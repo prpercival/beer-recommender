@@ -121,41 +121,44 @@ def init():
     for beer in data:
         # print(f'Intializing #{beerNumber}: {beer["Name"]}')
 
-        frequencies = {}
+        #getFrequencies(beer)
 
-        for word in beer["Words"]:
-            if frequencies.get(word):
-                frequencies[word] += 1
-            else:
-                frequencies[word] = 1
+        beer["nlp"] = nlp(' '.join(beer["Words"]))
 
-        frequencies = {
-            k: v
-            for k, v in sorted(
-                frequencies.items(), key=lambda item: item[1], reverse=True
-            )
-        }
-
-        beer["Frequencies"] = frequencies
-        beer["Comparison"] = ""
-        index = 0
-
-        for frequency in frequencies:
-            index += 1
-
-            if index > 25:
-                break
-
-            beer["Comparison"] += f" {frequency}"
-
-        beer["nlp"] = nlp(beer["Comparison"])
-
-        print(f"#{beerNumber} {beer['Name']}:{beer['Comparison']}")
+        #print(f"#{beerNumber} {beer['Name']}:#{beer['Comparison']}")
+        print(f"#{beerNumber} {beer['Name']}")
 
         beerNumber = beerNumber + 1
 
     print("--- %s seconds to load ---" % (time.time() - start_time))
     return data
+
+
+def getFrequencies(beer):
+    frequencies = {}
+
+    for word in beer["Words"]:
+        if frequencies.get(word):
+            frequencies[word] += 1
+        else:
+            frequencies[word] = 1
+
+    frequencies = {
+        k: v
+        for k, v in sorted(frequencies.items(), key=lambda item: item[1], reverse=True)
+    }
+
+    beer["Frequencies"] = frequencies
+    beer["Comparison"] = ""
+    index = 0
+
+    for frequency in frequencies:
+        index += 1
+
+        if index > 25:
+            break
+
+        beer["Comparison"] += f" {frequency}"
 
 
 app = Flask(__name__)
